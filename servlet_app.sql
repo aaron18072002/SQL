@@ -21,5 +21,29 @@ INSERT INTO ACCOUNT(accno,lastname,firstname,bal)
 VALUES (3, 'Nguyen','C',12000),
 	   (4, 'Nguyen','D',13000),
        (5, 'Nguyen','E',14000);
+       
+-- ------------------------------------------------------------------------ 
 
+USE servlet_app;
+
+CREATE TABLE USER (
+	UserId INT auto_increment PRIMARY KEY,
+    FirstName VARCHAR(20),
+    LastName VARCHAR(20),
+    Email VARCHAR(20),
+    Password VARCHAR(20)
+);
+
+SELECT * FROM USER;
+
+SELECT * FROM User WHERE Email = 'nemo1@gmail.com';
+
+INSERT INTO USER(FirstName,LastName,Email,Password)
+VALUES ('Nemo1','Nguyen1','nemo1@gmail.com','nemo123');
+
+UPDATE USER
+SET Password = 'nemo1234'
+WHERE Email = 'nemo@gmail.com';
+
+SHOW VARIABLES LIKE 'datadir';
 
