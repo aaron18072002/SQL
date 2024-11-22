@@ -63,3 +63,7 @@ SELECT * FROM Product;
 INSERT INTO Product(Name, Description, Price)
 VALUES ('Asus ROG','New Model',1000);
 
+UPDATE Product
+SET Price = 250
+WHERE Id = 2;
+
