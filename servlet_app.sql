@@ -47,3 +47,19 @@ WHERE Email = 'nemo@gmail.com';
 
 SHOW VARIABLES LIKE 'datadir';
 
+-- -----------------------------------------
+
+USE servlet_app;
+
+CREATE TABLE Product (
+	Id INT auto_increment primary key,
+    Name VARCHAR(20) NOT NULL,
+    Description VARCHAR (50),
+    Price INT
+);
+
+SELECT * FROM Product;
+
+INSERT INTO Product(Name, Description, Price)
+VALUES ('Asus ROG','New Model',1000);
+
