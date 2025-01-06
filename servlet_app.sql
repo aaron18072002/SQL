@@ -36,7 +36,9 @@ CREATE TABLE USER (
 
 SELECT * FROM USER;
 
-SELECT * FROM User WHERE Email = 'nemo1@gmail.com';
+SELECT * FROM User 
+WHERE Email = 'nemo@gmail.com'
+AND Password = 'thanhanh2';
 
 INSERT INTO USER(FirstName,LastName,Email,Password)
 VALUES ('Nemo1','Nguyen1','nemo1@gmail.com','nemo123');
@@ -66,4 +68,6 @@ VALUES ('Asus ROG','New Model',1000);
 UPDATE Product
 SET Price = 250
 WHERE Id = 2;
+
+DROP DATABASE servlet_app;
 

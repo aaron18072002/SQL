@@ -7,6 +7,20 @@
 --	GROUP BY YEAR(O.OrderDate), MONTH(O.OrderDate)
 --)
 
+USE NORTHWND;
+
+DROP VIEW MonthlySales;
+
+CREATE VIEW MonthlySales AS (
+	SELECT YEAR(O.OrderDate) AS 'Năm',
+		   MONTH(O.OrderDate) AS 'Tháng',
+		   COUNT(*) AS 'Số lượng đơn hàng'
+	FROM [dbo].[Orders] AS O
+	GROUP BY YEAR(O.OrderDate), MONTH(O.OrderDate)
+);
+
+SELECT * FROM MonthlySales;
+
 --SELECT * FROM MonthlySales
 
 -- Thực hành về view
