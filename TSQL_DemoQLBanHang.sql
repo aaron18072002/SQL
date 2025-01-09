@@ -175,3 +175,104 @@ BEGIN
 	WHERE MaLoai = @MaLoai;
 END;
 GO
+
+-- Câu 4: Lấy tất cả loại
+GO
+CREATE PROCEDURE spLayLoai
+AS
+BEGIN
+	SELECT * FROM Loai;
+END
+GO
+
+EXEC spLayLoai;
+
+-- Câu 6: Lấy danh sách hàng hóa thuộc loại cụ thể
+GO
+CREATE PROCEDURE spLayHangHoaTheoLoai
+	(@MaLoai INT)
+AS
+BEGIN
+	SELECT HH.*,L.TenLoai,NCC.TenCongTy
+	FROM HangHoa AS HH
+	LEFT JOIN Loai AS L
+	ON HH.MaLoai = L.MaLoai
+	LEFT JOIN NhaCungCap AS NCC
+	ON NCC.MaNCC = HH.MaNCC
+	WHERE HH.MaLoai = @MaLoai;
+END
+GO
+
+EXEC spLayHangHoaTheoLoai @MaLoai = 1002;
+
+-- Câu 7: Liệt kê DS KH(HoTen,DienThoai) có đặt hàng với tổng số tiền trên X
+GO
+CREATE PROCEDURE spLietKeKhachHang
+	(@TongTien FLOAT)
+AS 
+BEGIN
+	SELECT KH.HoTen, KH.DienThoai,
+		   SUM(CTHD.DonGia * CTHD.SoLuong) AS 'TongTien'
+	FROM KhachHang AS KH
+	LEFT JOIN HoaDon AS HD
+	ON KH.MaKH = HD.MaKH
+	LEFT JOIN ChiTietHD AS CTHD
+	ON CTHD.MaHD = HD.MaHD
+	GROUP BY KH.HoTen, KH.DienThoai
+	HAVING SUM(CTHD.DonGia * CTHD.SoLuong) > @TongTien;
+END
+GO
+
+EXEC spLietKeKhachHang @TongTien = 2000.0;
+
+-- Câu 8: Liệt kê DS hàng hóa (TenHH,TôngSL) có số lượng đạt hàng trên X
+GO
+CREATE PROCEDURE spThongKeHangHoaTheoSLDon
+	(@SLDat INT)
+AS
+BEGIN
+	SELECT HH.TenHH, COUNT(CTHD.MaHD) AS 'SLDon'
+	FROM HangHoa AS HH
+	INNER JOIN ChiTietHD AS CTHD
+	ON HH.MaHH = CTHD.MaHH
+	GROUP BY HH.TenHH
+	HAVING COUNT(CTHD.MaHD) > @SLDat;
+END
+GO
+
+EXEC spThongKeHangHoaTheoSLDon @SLDat = 10;
+
+-- Câu 9: Liệt kê DS hàng hóa (TenHH,TôngSL) có tổng số lượng đạt hàng trên X
+GO
+CREATE PROCEDURE spThongKeHangHoaTheoTongSLHang
+	(@TongSLDat INT)
+AS
+BEGIN
+	SELECT HH.TenHH, SUM(CTHD.SoLuong) AS 'TongSLDaDat'
+	FROM HangHoa AS HH
+	LEFT JOIN ChiTietHD AS CTHD
+	ON HH.MaHH = CTHD.MaHH
+	GROUP BY HH.TenHH
+	HAVING SUM(CTHD.SoLuong) > @TongSLDat;
+END
+GO
+
+EXEC spThongKeHangHoaTheoTongSLHang @TongSLDat = 200;
+
+-- Câu 10: Liệt kê DS hàng hóa (TenHH,TongSoTien) có tổng số tiền đặt trên X
+GO
+CREATE PROCEDURE spThongKeHangHoaTheoTongSoTien
+	(@TongSoTien FLOAT)
+AS
+BEGIN
+	SELECT HH.TenHH, SUM(CTHD.DonGia * CTHD.SoLuong) AS 'TongSoTienDaDat'
+	FROM HangHoa AS HH
+	LEFT JOIN ChiTietHD AS CTHD
+	ON HH.MaHH = CTHD.MaHH
+	GROUP BY HH.TenHH
+	HAVING SUM(CTHD.DonGia * CTHD.SoLuong) > @TongSoTien;
+END
+GO
+
+EXEC spThongKeHangHoaTheoTongSoTien @TongSoTien = 5000.0;
+
