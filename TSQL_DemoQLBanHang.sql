@@ -276,3 +276,59 @@ GO
 
 EXEC spThongKeHangHoaTheoTongSoTien @TongSoTien = 5000.0;
 
+-- test UNION
+
+CREATE TABLE #test1(id INT, txt VARCHAR(10) )
+CREATE TABLE #test2(id INT, txt VARCHAR(10) )
+GO
+INSERT #test1 VALUES(1,'a1')
+INSERT #test1 VALUES(2,'a2')
+ 
+INSERT #test2 VALUES(1,'a1') -- trùng với một bản ghi của #test1
+INSERT #test2 VALUES(3,'a3')
+
+SELECT * FROM #test1
+UNION ALL
+SELECT * FROM #test2;
+
+DROP TABLE IF EXISTS #test1;
+DROP TABLE IF EXISTS #test2;
+
+-- Viet ham tinh doanh thu ban hang theo ma hang hoa
+DROP FUNCTION IF EXISTS fnTinhDoanhThu;
+
+GO
+CREATE FUNCTION fnTinhDoanhThu
+	(@MaHH INT)
+RETURNS FLOAT
+AS
+BEGIN
+	DECLARE @TongDoanhSo FLOAT;
+
+	SELECT @TongDoanhSo = SUM(CTHD.DonGia * CTHD.SoLuong * (1 - CTHD.GiamGia))
+	FROM ChiTietHD AS CTHD
+	WHERE CTHD.MaHH = @MaHH
+
+	RETURN @TongDoanhSo;
+END
+GO
+
+SELECT MaHH, [dbo].[fnTinhDoanhThu](MaHH) AS 'TongDoanhSo'
+FROM HangHoa;
+
+-- viet ham tra ve table
+-- dung de lay so mat hang theo tung ncc
+GO
+CREATE FUNCTION fnThongKeSoMatHangTheoNCC()
+RETURNS TABLE
+	(MaNCC INT, SoLuongMatHang INT)
+AS 
+BEGIN
+	RETURN (
+		SELECT MaNCC, SUM(SoLuong) AS 'SoLuongMatHang'
+		FROM HangHoa
+		GROUP BY MaNCC
+	)
+END
+GO
+
