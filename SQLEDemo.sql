@@ -174,8 +174,34 @@ WHERE DV.MaDV NOT IN (
 );
 
 -- cau 5:  Liệt kê những khách hàng (MaKH, HoTen) thuộc loại khách hàng “VIP” có tổng tiền
---		   thanh toán lớn nhất từ trước đến nay. (0.5 điểm)SELECT TOP 1 KH.MaKH, KH.HoTen, SUM(DV.GiaDV) AS 'TongTienThanhToan'FROM CTTHAMMY AS CTTMLEFT JOIN LSTHAMMY AS LSTMON LSTM.MaLS = CTTM.MaLSLEFT JOIN KHACHHANG AS KHON KH.MaKH = LSTM.MaKHLEFT JOIN LOAIKHACHHANG AS LKHON KH.MaLoaiKH = LKH.MaLoaiKHLEFT JOIN DICHVU AS DVON DV.MaDV = CTTM.MaDVWHERE LKH.TenLoaiKH LIKE 'VIP'GROUP BY KH.MaKH, KH.HoTenORDER BY SUM(DV.GiaDV) DESC;-- Câu 6: Liệt kê MaDV, TenDV, Số khách hàng sử dụng, Tổng giá trị thanh toán của mỗi dịch vụ
---		  trong năm 2020. (0.5 điểm)SELECT DV.MaDV, DV.TenDV, 	   COUNT(*) AS 'SoKHSuDung',	   SUM(DV.GiaDV) AS 'TongGiaTriThanhToan'FROM CTTHAMMY AS CTTMINNER JOIN DICHVU AS DVON CTTM.MaDV = DV.MaDV INNER JOIN LSTHAMMY AS LSTMON LSTM.MaLS = CTTM.MaLS  AND YEAR(LSTM.NgayTM) = 2020GROUP BY DV.MaDV, DV.TenDV-- Câu 7: Liệt kê MaKH, HoTen, DiaChi, SoDienThoai, TenLoaiKH, NgayTM, DanhGia, Tổng tiền
+--		   thanh toán lớn nhất từ trước đến nay. (0.5 điểm)
+SELECT TOP 1 KH.MaKH, KH.HoTen, SUM(DV.GiaDV) AS 'TongTienThanhToan'
+FROM CTTHAMMY AS CTTM
+LEFT JOIN LSTHAMMY AS LSTM
+ON LSTM.MaLS = CTTM.MaLS
+LEFT JOIN KHACHHANG AS KH
+ON KH.MaKH = LSTM.MaKH
+LEFT JOIN LOAIKHACHHANG AS LKH
+ON KH.MaLoaiKH = LKH.MaLoaiKH
+LEFT JOIN DICHVU AS DV
+ON DV.MaDV = CTTM.MaDV
+WHERE LKH.TenLoaiKH LIKE 'VIP'
+GROUP BY KH.MaKH, KH.HoTen
+ORDER BY SUM(DV.GiaDV) DESC;
+
+-- Câu 6: Liệt kê MaDV, TenDV, Số khách hàng sử dụng, Tổng giá trị thanh toán của mỗi dịch vụ
+--		  trong năm 2020. (0.5 điểm)
+SELECT DV.MaDV, DV.TenDV, 
+	   COUNT(*) AS 'SoKHSuDung',
+	   SUM(DV.GiaDV) AS 'TongGiaTriThanhToan'
+FROM CTTHAMMY AS CTTM
+INNER JOIN DICHVU AS DV
+ON CTTM.MaDV = DV.MaDV 
+INNER JOIN LSTHAMMY AS LSTM
+ON LSTM.MaLS = CTTM.MaLS  AND YEAR(LSTM.NgayTM) = 2020
+GROUP BY DV.MaDV, DV.TenDV
+
+-- Câu 7: Liệt kê MaKH, HoTen, DiaChi, SoDienThoai, TenLoaiKH, NgayTM, DanhGia, Tổng tiền
 --	      thanh toán. (0.5 điểm)
 -- ***Lưu ý: Những khách hàng nào chưa có thông tin thẩm mỹ liên quan cũng được liệt kê
 SELECT KH.MaKH,
@@ -217,3 +243,78 @@ ON DV.MaDV = CTTM.MaDV
 GROUP BY KH.MaKH, KH.HoTen, KH.DiaChi, KH.SoDienThoai
 HAVING COUNT(*) = 2 AND 
 	   SUM(DV.GiaDV) > 10000000.00;
+
+-- Câu 9: Liệt kê những khách hàng thuộc loại “Vang lai” đã từng thực hiện ít nhất 2 dịch vụ thẩm
+--		  mỹ khác nhau nhưng chưa từng sử dụng dịch vụ “Cat mi mat”. (1 điểm)
+SELECT KH.*
+FROM KHACHHANG AS KH
+INNER JOIN LOAIKHACHHANG AS LKH
+ON KH.MaLoaiKH = LKH.MaLoaiKH
+WHERE KH.MaKH IN (
+	SELECT LSTM.MaKH
+	FROM LSTHAMMY AS LSTM
+	INNER JOIN CTTHAMMY AS CTTM
+	ON LSTM.MaLS = CTTM.MaLS
+	INNER JOIN DICHVU AS DV
+	ON CTTM.MaDV = DV.MaDV
+	WHERE DV.TenDV NOT LIKE 'Cat mi mat'
+	GROUP BY LSTM.MaKH
+	HAVING COUNT(*) >= 2
+) AND LKH.TenLoaiKH LIKE 'Vang lai';
+
+-- câu 10:Liệt kê danh sách các bác sĩ (MaBS, TenBS) mang lại doanh thu cho trung tâm thẩm mỹ
+--		  nhiều nhất trong 6 tháng đầu năm 2021. (0.5 điểm)
+--***Lưu ý: Doanh thu các bác sĩ mang lại cho trung tâm thẩm mỹ được tính bằng tổng tiền thanh
+--		    toán của các ca thẩm mỹ mà bác sĩ phụ trách.
+SELECT BS.MaBS, BS.TenBS, SUM(DV.GiaDV) AS 'TongTienThanhToan'
+FROM CTTHAMMY AS CTTM
+INNER JOIN BACSI AS BS
+ON CTTM.MaBS = BS.MaBS
+INNER JOIN DICHVU AS DV
+ON CTTM.MaDV = DV.MaDV
+INNER JOIN LSTHAMMY AS LSTM 
+ON CTTM.MaLS = LSTM.MaLS
+WHERE LSTM.NgayTM BETWEEN '2021-01-01' AND DATEADD(MONTH,6,'2021-01-01')
+--WHERE DATEDIFF(MONTH,'2021-01-01',DATEADD(MONTH,6,'2021-01-01')) = 6
+GROUP BY BS.MaBS, BS.TenBS
+ORDER BY SUM(DV.GiaDV) DESC;
+
+-- Câu 11: Liệt kê thông tin các khách hàng là “Nu” đã từng đến trung tâm thẩm mỹ làm đẹp và tổng
+--		   tiền thanh toán cho tất cả các lần đến thẩm mỹ lớn hơn 20.000.000 VNĐ nhưng đã hơn 3 tháng
+--		   kể từ ngày hiện tại đã không đến trung tâm thực hiện dịch vụ nào. (1 điểm)
+SELECT *
+FROM KHACHHANG 
+WHERE MaKH IN (
+	SELECT LSTM.MaKH
+	FROM LSTHAMMY AS LSTM
+	INNER JOIN CTTHAMMY AS CTTM
+	ON CTTM.MaLS = LSTM.MaLS
+	INNER JOIN DICHVU AS DV
+	ON DV.MaDV = CTTM.MaDV
+	WHERE DATEDIFF(MONTH,LSTM.NgayTM,GETDATE()) > 3
+	GROUP BY LSTM.MaKH
+	HAVING SUM(DV.GiaDV) > 20000000.00
+) AND GioiTinh LIKE 'Nu';
+
+GO
+CREATE FUNCTION fnSoDVMaKHSuDung
+	(@MaKH VARCHAR(30))
+RETURNS @temp TABLE (
+	MaKH VARCHAR(30),
+	HoTen VARCHAR(30),
+	SoLanSuDung INT
+)
+AS
+BEGIN
+	INSERT INTO @temp
+	SELECT CTTM.MaDV, COUNT(*) AS 'SoDVDaSuDung'
+	FROM LSTHAMMY AS LSTM
+	INNER JOIN KHACHHANG AS KH
+	ON LSTM.MaKH = KH.MaKH
+	INNER JOIN CTTHAMMY AS CTTM
+	ON CTTM.MaLS = LSTM.MaLS
+	GROUP BY CTTM.MaDV
+
+	RETURN;
+END
+GO
