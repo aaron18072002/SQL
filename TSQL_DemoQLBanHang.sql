@@ -321,14 +321,35 @@ FROM HangHoa;
 GO
 CREATE FUNCTION fnThongKeSoMatHangTheoNCC()
 RETURNS TABLE
-	(MaNCC INT, SoLuongMatHang INT)
 AS 
+RETURN (
+    SELECT MaNCC, COUNT(*) AS SoLuongMatHang
+    FROM HangHoa
+    GROUP BY MaNCC
+)
+GO
+
+--VD3: Viết hàm fn_ThongKeMatHang TheoLoaiHang
+--nhận vào mã loại, mã nhà cung cấp
+--trả ra table gồm các cột (MaHH, TenHH, TongSoLuongDaBan)
+GO
+CREATE FUNCTION fn_ThongKeMatHangTheoLoaiHang
+	(@MaLoai INT, @MaNCC INT)
+RETURNS @temp TABLE (
+	MaHH INT PRIMARY KEY,
+	TenHH NVARCHAR(50),
+	TongSLBan INT
+)
+AS
 BEGIN
-	RETURN (
-		SELECT MaNCC, SUM(SoLuong) AS 'SoLuongMatHang'
-		FROM HangHoa
-		GROUP BY MaNCC
-	)
+	INSERT INTO @temp 
+		SELECT HH.MaHH, HH.TenHH, SUM(CTHD.SoLuong) AS 'TongSLBan'
+		FROM HangHoa AS HH
+		LEFT JOIN ChiTietHD AS CTHD
+		ON HH.MaHH = CTHD.MaHH
+		GROUP BY HH.MaHH, HH.TenHH
+
+	RETURN;
 END
 GO
 
