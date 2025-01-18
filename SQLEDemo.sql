@@ -241,7 +241,7 @@ ON CTTM.MaLS = LSTM.MaLS
 INNER JOIN DICHVU AS DV
 ON DV.MaDV = CTTM.MaDV
 GROUP BY KH.MaKH, KH.HoTen, KH.DiaChi, KH.SoDienThoai
-HAVING COUNT(*) = 2 AND 
+HAVING COUNT(*) >= 1 AND 
 	   SUM(DV.GiaDV) > 10000000.00;
 
 -- Câu 9: Liệt kê những khách hàng thuộc loại “Vang lai” đã từng thực hiện ít nhất 2 dịch vụ thẩm
@@ -296,6 +296,8 @@ WHERE MaKH IN (
 	HAVING SUM(DV.GiaDV) > 20000000.00
 ) AND GioiTinh LIKE 'Nu';
 
+-- //////////////////////////////////
+
 GO
 CREATE FUNCTION fnSoDVMaKHSuDung
 	(@MaKH VARCHAR(30))
@@ -318,3 +320,23 @@ BEGIN
 	RETURN;
 END
 GO
+
+WITH temp_LayMaKHSinhNam1985TroLen AS (
+	SELECT KH.MaKH
+	FROM KHACHHANG AS KH
+	WHERE KH.NgaySinh BETWEEN '1985-01-01' AND DATEADD(YEAR,10,'1985-01-01')
+)
+
+SELECT KH.*
+FROM KHACHHANG AS KH
+WHERE KH.MaKH IN (SELECT * FROM temp_LayMaKHSinhNam1985TroLen);
+
+SELECT KH.*
+FROM KHACHHANG AS KH
+INNER JOIN temp_LayMaKHSinhNam1985TroLen AS Temp
+ON KH.MaKH = Temp.MaKH
+
+SELECT KH.MaKH, KH.HoTen, FORMAT(KH.NgaySinh, 'dd/MM/yyyy') AS 'NgaySinh'
+FROM KHACHHANG AS KH
+WHERE KH.NgaySinh BETWEEN '1985-01-01' AND DATEADD(YEAR,10,'1985-01-01');
+
