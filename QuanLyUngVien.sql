@@ -119,6 +119,24 @@ VALUES ('UV01',N'Nguyễn Văn A','2002-07-18','0906413507','nguyenvana@fpt.com'
 INSERT INTO FRESHERS(fresherID,graduationDate,graduationRank)
 VALUES ('UV01','2025-06-06',N'Giỏi');
 
+SELECT C.fullName
+FROM CANDIDATES AS C;
+
+SELECT * FROM CERTIFICATES;
+
 SELECT * FROM CANDIDATES;
 SELECT * FROM FRESHERS;
 SELECT * FROM INTERNS;
+SELECT * FROM EXPERIENCES;
+
+SELECT C.*, 
+	   E.expInYear, 
+	   F.graduationDate, F.graduationRank, 
+	   I.major, I.semester, I.universityName
+FROM CANDIDATES AS C
+LEFT JOIN EXPERIENCES AS E
+ON C.candidateID = E.experienceID
+LEFT JOIN FRESHERS AS F
+ON F.fresherID = C.candidateID
+LEFT JOIN INTERNS AS I
+ON C.candidateID = I.internID;
