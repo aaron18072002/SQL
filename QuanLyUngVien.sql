@@ -140,3 +140,12 @@ LEFT JOIN FRESHERS AS F
 ON F.fresherID = C.candidateID
 LEFT JOIN INTERNS AS I
 ON C.candidateID = I.internID;
+
+SELECT *
+FROM CANDIDATES AS C
+WHERE C.candidateID = 'UV01';
+
+INSERT INTO PROSKILLS(proSkillID, proSkillName)
+VALUES ('KN01','Coding');
+
+SELECT * FROM PROSKILLS;
