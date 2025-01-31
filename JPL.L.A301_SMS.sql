@@ -135,6 +135,7 @@ SELECT * FROM Employees;
 
 SELECT * FROM Customers;
 
+DROP FUNCTION IF EXISTS fn_computeOrderTotal;
 GO
 CREATE FUNCTION fn_computeOrderTotal
 	(@orderId INT)
@@ -143,7 +144,7 @@ AS
 BEGIN
 	DECLARE @total DECIMAL(12, 2);
 
-	SELECT @total = SUM(LI.price)
+	SELECT @total = SUM(LI.price * LI.quantity)
 	FROM LineItem AS LI
 	WHERE LI.order_id = @orderId;
 
@@ -153,6 +154,7 @@ GO
 
 SELECT dbo.fn_computeOrderTotal(2) AS total_price;
 
+-- thêm
 GO
 CREATE PROCEDURE sp_insertCustomer
 	(@customerName NVARCHAR(100))
@@ -174,3 +176,80 @@ DECLARE @customerName NVARCHAR(100) = 'Công ty AAA'
 EXEC sp_insertCustomer @customerName;
 
 SELECT * FROM Customers;
+
+-- xóa Customer
+GO
+CREATE PROCEDURE sp_deleteCustomer
+    (@customerId INT)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+
+    DELETE FROM LineItem
+    WHERE order_id IN (SELECT order_id FROM Orders WHERE customer_id = @customerId);
+
+    DELETE FROM Orders
+    WHERE customer_id = @customerId;
+
+    DELETE FROM Customers
+    WHERE customer_id = @customerId;
+
+    COMMIT TRANSACTION;
+END;
+GO
+
+EXEC sp_deleteCustomer 4;
+
+-- Data test cho câu 6
+INSERT INTO Orders (order_date, customer_id, employee_id, total)
+VALUES 
+    ('2025-01-01', 5, 4, 36000000.00);
+
+INSERT INTO LineItem (order_id, product_id, quantity, price)
+VALUES 
+    (10, 1, 1, 24000000.00),   
+    (10, 3, 2, 7200000.00);
+
+SELECT * FROM Orders;
+SELECT* FROM LineItem;
+SELECT* FROM Customers;
+
+-- update
+GO
+CREATE PROCEDURE sp_updateCustomer
+	(@customerId INT, @customerName NVARCHAR(100))
+AS
+BEGIN
+	IF @customerName IS NULL
+		BEGIN
+			RETURN;
+		END
+	ELSE
+		BEGIN
+			UPDATE Customers
+			SET customer_name = @customerName
+			WHERE customer_id = @customerId;
+		END
+END
+GO
+
+SELECT * FROM Customers;
+
+EXEC sp_updateCustomer @customerId = 1, @customerName = 'Công ty ABC';
+
+-- câu 8
+INSERT INTO Orders(customer_id,employee_id,order_date,total)
+VALUES (null,null,null,null);
+
+SELECT * FROM Orders;
+
+-- câu 9
+INSERT INTO LineItem(order_id,price,product_id,quantity)
+VALUES (null,null,null,null);
+
+SELECT * FROM LineItem;
+
+-- cau 10
+UPDATE Orders
+SET total = 15000000
+WHERE order_id = 12;

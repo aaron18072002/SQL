@@ -1,0 +1,3 @@
+# Ignore all MDF and LDF files
+*.mdf
+*.ldf
